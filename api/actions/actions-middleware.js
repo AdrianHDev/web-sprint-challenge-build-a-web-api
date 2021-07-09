@@ -8,3 +8,5 @@ const verifyActionById = (req, res, next) => {
         next({status: 404, message: "The server could not locate said resource."})
     })
 }
+
+module.exports = verifyActionById;

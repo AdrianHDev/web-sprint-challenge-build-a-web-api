@@ -1,11 +1,11 @@
 const Actions = require("./actions-model");
 const express = require("express");
-const { verifyProjectId } = require("../projects/projects-middleware");
+const verifyActionById = require("./actions-middleware");
 
 // Write your "actions" router here!
-const router = express.Router();
+const actionsRouter = express.Router();
 
-router.get("/", (req, res, next) => {
+actionsRouter.get("/", (req, res, next) => {
   Actions.get()
     .then((actions) => {
       req.json(actions);
@@ -15,7 +15,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-router.get("/:id", verifyProjectId, (req, res, next) => {
+actionsRouter.get("/:id", verifyActionById, (req, res, next) => {
   Actions.get(req.params.id)
     .then((action) => {
       res.json(action);
@@ -25,21 +25,50 @@ router.get("/:id", verifyProjectId, (req, res, next) => {
     });
 });
 
-router.post("/", (req, res, next) => {
+actionsRouter.post("/", (req, res, next) => {
   if (!req.body.project_id || !req.body.description || !req.body.notes) {
-    req
-      .status(400)
-      .json({
-        message:
-          "Please make sure you provide a project id, a description, and notes.",
-      });
+    res.status(400).json({
+      message:
+        "Please make sure you provide a project id, a description, and notes.",
+    });
   } else {
     Actions.insert(req.body)
       .then((nAction) => {
-        req.json(nAction);
+        res.json(nAction);
       })
       .catch(() => {
         next({ error: 500, message: "internal server error" });
       });
   }
 });
+
+actionsRouter.put("/:id", verifyActionById, (req, res, next) => {
+  if (
+    !req.body.id ||
+    !req.body.project_id ||
+    !req.body.description ||
+    !req.body.notes ||
+    !req.body.completed
+  ) {
+    next({ status: 400, message: "Missing required paramaters" });
+  } else {
+    Actions.update(req.params.id, req.body)
+      .then((updated) => {
+        res.json(updated);
+      })
+      .catch(() => {
+        next({ error: 500, message: "internal server error" });
+      });
+  }
+});
+
+actionsRouter.delete("/:id", verifyActionById, (req, res, next) => {
+  Actions.remove(req.params.id)
+    .then(() => {
+      res.json();
+    })
+    .catch(() => {
+      next({ error: 500, message: "internal server error" });
+    });
+});
+module.exports = actionsRouter;
