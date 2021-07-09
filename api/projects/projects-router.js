@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/", (req, res, next) => {
   Projects.get()
     .then((projects) => {
+      console.log("Projects: ", projects);
       res.json(projects);
     })
     .catch(() => {
@@ -14,7 +15,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-router.get("/:id", (req, res, next) => {
+router.get("/:id", verifyProjectId, (req, res, next) => {
   const id = req.params.id;
   Projects.get(id)
     .then((project) => {
@@ -44,13 +45,25 @@ router.post("/", (req, res, next) => {
 });
 
 router.put("/:id", verifyProjectId, (req, res, next) => {
-  Projects.update(req.params.id, req.body)
-    .then((updProj) => {
-      res.json(updProj);
-    })
-    .catch(() => {
-      next({ status: 500, message: "Unknown error occured." });
-    });
+  if (
+    !req.body.name ||
+    !req.body.description | (typeof req.body.completed === "boolean")
+  ) {
+    res
+      .status(400)
+      .json({
+        message:
+          "You failed to provide either a name, description or completed tag.",
+      });
+  } else {
+    Projects.update(req.params.id, req.body)
+      .then((updProj) => {
+        res.json(updProj);
+      })
+      .catch(() => {
+        next({ status: 500, message: "Unknown error occured." });
+      });
+  }
 });
 
 router.delete("/:id", verifyProjectId, (req, res, next) => {
