@@ -8,10 +8,10 @@ const actionsRouter = express.Router();
 actionsRouter.get("/", (req, res, next) => {
   Actions.get()
     .then((actions) => {
-      req.json(actions);
+      res.json(actions);
     })
     .catch(() => {
-      next({ error: 500, message: "internal server error" });
+      next({ status: 500, message: "internal server error" });
     });
 });
 
@@ -21,13 +21,14 @@ actionsRouter.get("/:id", verifyActionById, (req, res, next) => {
       res.json(action);
     })
     .catch(() => {
-      next({ error: 500, message: "internal server error" });
+      next({ status: 500, message: "internal server error" });
     });
 });
 
 actionsRouter.post("/", (req, res, next) => {
   if (!req.body.project_id || !req.body.description || !req.body.notes) {
-    res.status(400).json({
+    next({
+      status: 400,
       message:
         "Please make sure you provide a project id, a description, and notes.",
     });
@@ -37,7 +38,7 @@ actionsRouter.post("/", (req, res, next) => {
         res.json(nAction);
       })
       .catch(() => {
-        next({ error: 500, message: "internal server error" });
+        next({ status: 500, message: "internal server error" });
       });
   }
 });
@@ -57,7 +58,7 @@ actionsRouter.put("/:id", verifyActionById, (req, res, next) => {
         res.json(updated);
       })
       .catch(() => {
-        next({ error: 500, message: "internal server error" });
+        next({ status: 500, message: "internal server error" });
       });
   }
 });
@@ -68,7 +69,7 @@ actionsRouter.delete("/:id", verifyActionById, (req, res, next) => {
       res.json();
     })
     .catch(() => {
-      next({ error: 500, message: "internal server error" });
+      next({ status: 500, message: "internal server error" });
     });
 });
 module.exports = actionsRouter;

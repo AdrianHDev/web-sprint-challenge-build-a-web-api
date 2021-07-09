@@ -45,9 +45,10 @@ router.post("/", (req, res, next) => {
 });
 
 router.put("/:id", verifyProjectId, (req, res, next) => {
+  console.log(typeof req.body.completed)
   if (
     !req.body.name ||
-    !req.body.description | (typeof req.body.completed === "boolean")
+    !req.body.description | (typeof req.body.completed !== "boolean")
   ) {
     res
       .status(400)
